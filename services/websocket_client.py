@@ -72,7 +72,6 @@ class WebSocketClient:
     async def subscribe(self) -> None:
         """Send subscription message to the WebSocket server"""
         try:
-            # This is an example subscription message - adjust based on OKX API docs
             subscription = {
                 "op": "subscribe",
                 "args": [{
