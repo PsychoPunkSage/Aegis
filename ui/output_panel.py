@@ -32,6 +32,7 @@ class OutputPanel:
         # Create sections
         self._create_market_data_section()
         self._create_simulation_results_section()
+        self._create_export_buttons()
         
     def _create_market_data_section(self) -> None:
         """Create market data display section"""
@@ -321,6 +322,9 @@ class OutputPanel:
         """
         if not results:
             return
+        
+        # Store current results for export
+        self.current_results = results
             
         # Check for error
         if "error" in results:
@@ -600,3 +604,107 @@ class OutputPanel:
             font=("Arial", 10, "bold"),
             fill="black"
         )
+
+    def _create_export_buttons(self) -> None:
+        """Create export buttons for simulation results"""
+        # Create a frame for export buttons
+        export_frame = ttk.LabelFrame(self.frame, text="Export Results")
+        export_frame.grid(row=2, column=0, columnspan=2, sticky="nsew", padx=5, pady=5)
+
+        # Configure grid
+        export_frame.columnconfigure(0, weight=1)
+        export_frame.columnconfigure(1, weight=1)
+        export_frame.columnconfigure(2, weight=1)
+
+        # Create buttons
+        csv_button = ttk.Button(export_frame, text="Export to CSV", command=self._export_to_csv)
+        csv_button.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
+
+        json_button = ttk.Button(export_frame, text="Export to JSON", command=self._export_to_json)
+        json_button.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
+
+        screenshot_button = ttk.Button(export_frame, text="Save Screenshot", command=self._save_screenshot)
+        screenshot_button.grid(row=0, column=2, padx=5, pady=5, sticky="ew")
+
+    def _export_to_csv(self) -> None:
+        """Export current simulation results to CSV"""
+        if not hasattr(self, 'current_results') or not self.current_results:
+            tk.messagebox.showinfo("Export", "No simulation results to export")
+            return
+
+        # Import export utility
+        from utils.export import export_results_to_csv
+
+        # Ask for filename
+        from tkinter import filedialog
+        filename = filedialog.asksaveasfilename(
+            defaultextension=".csv",
+            filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+            title="Export Simulation Results"
+        )
+
+        if not filename:
+            return
+
+        # Export results
+        try:
+            export_results_to_csv(self.current_results, filename)
+            tk.messagebox.showinfo("Export", f"Results exported to {filename}")
+        except Exception as e:
+            tk.messagebox.showerror("Export Error", f"Failed to export results: {e}")
+
+    def _export_to_json(self) -> None:
+        """Export current simulation results to JSON"""
+        if not hasattr(self, 'current_results') or not self.current_results:
+            tk.messagebox.showinfo("Export", "No simulation results to export")
+            return
+
+        # Import export utility
+        from utils.export import export_results_to_json
+
+        # Ask for filename
+        from tkinter import filedialog
+        filename = filedialog.asksaveasfilename(
+            defaultextension=".json",
+            filetypes=[("JSON files", "*.json"), ("All files", "*.*")],
+            title="Export Simulation Results"
+        )
+
+        if not filename:
+            return
+
+        # Export results
+        try:
+            export_results_to_json(self.current_results, filename)
+            tk.messagebox.showinfo("Export", f"Results exported to {filename}")
+        except Exception as e:
+            tk.messagebox.showerror("Export Error", f"Failed to export results: {e}")
+
+    def _save_screenshot(self) -> None:
+        """Save a screenshot of the current view"""
+        # Ask for filename
+        from tkinter import filedialog
+        filename = filedialog.asksaveasfilename(
+            defaultextension=".png",
+            filetypes=[("PNG files", "*.png"), ("All files", "*.*")],
+            title="Save Screenshot"
+        )
+
+        if not filename:
+            return
+
+        try:
+            # Get window geometry
+            x = self.frame.winfo_rootx()
+            y = self.frame.winfo_rooty()
+            width = self.frame.winfo_width()
+            height = self.frame.winfo_height()
+
+            # Capture screenshot
+            import PIL.ImageGrab
+            screenshot = PIL.ImageGrab.grab(bbox=(x, y, x+width, y+height))
+            screenshot.save(filename)
+
+            tk.messagebox.showinfo("Screenshot", f"Screenshot saved to {filename}")
+        except Exception as e:
+            tk.messagebox.showerror("Screenshot Error", f"Failed to save screenshot: {e}")
