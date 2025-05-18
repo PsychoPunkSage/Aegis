@@ -28,7 +28,7 @@ class OrderBook:
     symbol: str
     asks: List[OrderBookLevel] = field(default_factory=list)
     bids: List[OrderBookLevel] = field(default_factory=list)
-    
+
     @classmethod
     def from_json(cls, json_data: str) -> 'OrderBook':
         """Create OrderBook from JSON string"""
@@ -107,3 +107,72 @@ class MarketMetrics:
             f"MarketMetrics(symbol={self.symbol}, mid={self.mid_price:.2f}, "
             f"spread={self.spread:.2f}, vol={self.volatility:.4f})"
         )
+
+class OptimizedOrderBook(OrderBook):
+    """
+    Memory-optimized version of the OrderBook that uses NumPy arrays for better performance
+    """
+    
+    def __init__(self, timestamp, exchange, symbol, max_depth=50):
+        """Initialize optimized order book"""
+        super().__init__(timestamp, exchange, symbol)
+        
+        # Use numpy arrays for better performance
+        import numpy as np
+        self._ask_prices = np.zeros(max_depth)
+        self._ask_quantities = np.zeros(max_depth)
+        self._bid_prices = np.zeros(max_depth)
+        self._bid_quantities = np.zeros(max_depth)
+        self._depth = 0
+        self.max_depth = max_depth
+        
+    @classmethod
+    def from_orderbook(cls, orderbook: OrderBook, max_depth=50) -> 'OptimizedOrderBook':
+        """Create optimized order book from standard order book"""
+        optimized = cls(
+            timestamp=orderbook.timestamp,
+            exchange=orderbook.exchange,
+            symbol=orderbook.symbol,
+            max_depth=max_depth
+        )
+        
+        # Copy data from standard order book
+        for i, level in enumerate(orderbook.asks):
+            if i >= max_depth:
+                break
+            optimized._ask_prices[i] = level.price
+            optimized._ask_quantities[i] = level.quantity
+            
+        for i, level in enumerate(orderbook.bids):
+            if i >= max_depth:
+                break
+            optimized._bid_prices[i] = level.price
+            optimized._bid_quantities[i] = level.quantity
+            
+        optimized._depth = min(max_depth, max(len(orderbook.asks), len(orderbook.bids)))
+        
+        # Generate the standard asks/bids for compatibility
+        optimized._update_levels()
+        
+        return optimized
+    
+    def _update_levels(self):
+        """Update standard order book levels from numpy arrays"""
+        self.asks = []
+        self.bids = []
+        
+        for i in range(self._depth):
+            if self._ask_prices[i] > 0:
+                self.asks.append(OrderBookLevel(self._ask_prices[i], self._ask_quantities[i]))
+            if self._bid_prices[i] > 0:
+                self.bids.append(OrderBookLevel(self._bid_prices[i], self._bid_quantities[i]))
+    
+    def depth_at_price(self, price: float, side: str) -> float:
+        """Optimized version of depth calculation"""
+        import numpy as np
+        if side.lower() == 'ask':
+            mask = self._ask_prices <= price
+            return np.sum(self._ask_quantities[mask])
+        else:  # bid side
+            mask = self._bid_prices >= price
+            return np.sum(self._bid_quantities[mask])
