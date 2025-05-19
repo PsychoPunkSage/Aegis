@@ -1,12 +1,12 @@
 """
 Advanced volatility calculations for market data
 """
-import numpy as np
 import math
 import logging
-from typing import List, Tuple, Optional, Dict
-from datetime import datetime, timedelta
+import numpy as np
+from typing import List, Dict
 from collections import deque
+from datetime import datetime
 from utils.performance import measure_latency
 
 class VolatilityCalculator:

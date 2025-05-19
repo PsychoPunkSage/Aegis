@@ -1,12 +1,11 @@
 """
 Maker/Taker proportion estimator
 """
-import numpy as np
-import math
+
 import logging
-from typing import Dict, Any, List, Tuple, Optional
-from data.market_data import OrderBook, MarketMetrics
+from typing import Dict
 from utils.performance import measure_latency
+from data.market_data import OrderBook, MarketMetrics
 
 class MakerTakerEstimator:
     """

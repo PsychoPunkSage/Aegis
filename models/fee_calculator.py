@@ -3,7 +3,7 @@ Exchange fee calculations
 """
 import logging
 from enum import Enum
-from typing import Dict, Any, Optional
+from typing import Dict
 from utils.performance import measure_latency
 
 class FeeTier(Enum):

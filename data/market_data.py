@@ -1,10 +1,10 @@
 """
 Market data structures for the Crypto Trade Simulator
 """
-from dataclasses import dataclass, field
-from typing import Dict, List, Tuple
-from datetime import datetime
 import json
+from typing import List
+from datetime import datetime
+from dataclasses import dataclass, field
 
 @dataclass
 class OrderBookLevel:

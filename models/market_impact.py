@@ -1,11 +1,10 @@
 """
 Enhanced market impact models
 """
-import numpy as np
 import math
 import logging
-from typing import Dict, Any, Optional, List, Tuple
 from enum import Enum
+from typing import Dict, Any
 from data.market_data import OrderBook, MarketMetrics
 from utils.performance import measure_latency
 

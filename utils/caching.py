@@ -4,7 +4,7 @@ Caching utilities for performance optimization
 import time
 import logging
 import functools
-from typing import Dict, Any, Callable, Tuple, Optional, List
+from typing import Dict, Any, Optional
 
 class LRUCache:
     """

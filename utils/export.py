@@ -4,9 +4,8 @@ Export utilities for simulation results
 import csv
 import json
 import logging
-import os
-from typing import Dict, Any, List, Optional
 from datetime import datetime
+from typing import Dict, Any, Optional
 
 def export_results_to_csv(results: Dict[str, Any], filename: Optional[str] = None) -> str:
     """

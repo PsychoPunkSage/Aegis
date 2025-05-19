@@ -1,9 +1,9 @@
 """
 Slippage estimation models for the Crypto Trade Simulator
 """
-import numpy as np
 import logging
-from typing import List, Dict, Tuple, Optional
+import numpy as np
+from typing import Optional
 from data.market_data import OrderBook
 from utils.performance import measure_latency
 
