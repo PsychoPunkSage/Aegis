@@ -1,9 +1,9 @@
 """
 Output panel for the Crypto Trade Simulator
 """
+import logging
 import tkinter as tk
 from tkinter import ttk
-import logging
 from typing import Dict, Any
 
 class OutputPanel:
