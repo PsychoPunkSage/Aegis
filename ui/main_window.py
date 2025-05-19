@@ -191,9 +191,24 @@ class MainWindow:
         # Import the dashboard
         from ui.performance_dashboard import PerformanceDashboard
 
-        # Create dashboard if it doesn't exist
-        if not hasattr(self, 'dashboard') or not self.dashboard:
+        # Check if dashboard exists and is still valid
+        dashboard_exists = hasattr(self, 'dashboard') and self.dashboard
+        if dashboard_exists:
+            try:
+                # Try to access a property to see if it's still valid
+                self.dashboard.window.winfo_exists()
+            except (tk.TclError, AttributeError):
+                # If we get an error, the dashboard is no longer valid
+                dashboard_exists = False
+                delattr(self, 'dashboard')
+
+        # Create dashboard if it doesn't exist or is no longer valid
+        if not dashboard_exists:
             self.dashboard = PerformanceDashboard(self.root)
+
+            # Add a callback when the window is closed to update our reference
+            self.dashboard.window.protocol("WM_DELETE_WINDOW", 
+                                          lambda: self._on_dashboard_close())
         else:
             # If it exists, bring it to front
             self.dashboard.window.lift()
@@ -203,6 +218,17 @@ class MainWindow:
         self.dashboard.update_connection_data(self.connection_data)
         self.dashboard.update_error_data(self.error_log)
         self.dashboard.refresh()
+
+    def _on_dashboard_close(self) -> None:
+        """Handle dashboard window closing"""
+        if hasattr(self, 'dashboard'):
+            try:
+                # Let the dashboard know it's being closed
+                self.dashboard.close()
+            except:
+                pass
+            # Remove our reference
+            self.dashboard = None
 
     def update_performance_metrics(self, metrics: Dict[str, Any]) -> None:
         """
@@ -217,6 +243,128 @@ class MainWindow:
         if hasattr(self, 'dashboard') and self.dashboard:
             self.dashboard.update_performance_data(metrics)
             self.dashboard.refresh()
+
+    def update_batch_status(self, status: Dict[str, Any]) -> None:
+        """
+        Update batch simulation status
+
+        Args:
+            status: Batch status
+        """
+        # Show status in UI
+        self.status_var.set(f"Batch simulation {status['batch_id']} running with {status['variations']} variations...")  
+    
+    def update_batch_results(self, results: Dict[str, Any]) -> None:
+        """
+        Update batch simulation results
+
+        Args:
+            results: Batch results
+        """
+        batch_id = results.get("batch_id", "unknown")
+        count = results.get("count", 0)
+        processing_time = results.get("processing_time", 0)
+
+        # Update status
+        self.status_var.set(f"Batch simulation {batch_id} completed: {count} simulations in {processing_time:.1f}s")
+
+        # Display results
+        # Create batch results window
+        batch_window = tk.Toplevel(self.root)
+        batch_window.title(f"Batch Results: {batch_id}")
+        batch_window.geometry("800x600")
+
+        # Configure grid
+        batch_window.columnconfigure(0, weight=1)
+        batch_window.rowconfigure(0, weight=0)  # Header
+        batch_window.rowconfigure(1, weight=1)  # Results
+        batch_window.rowconfigure(2, weight=0)  # Footer
+
+        # Create header
+        header_frame = ttk.Frame(batch_window)
+        header_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=5)
+
+        ttk.Label(header_frame, text=f"Batch Simulation Results: {batch_id}", 
+                 font=("Arial", 14, "bold")).pack(side=tk.LEFT, padx=10)
+
+        ttk.Label(header_frame, 
+                 text=f"{count} simulations in {processing_time:.1f}s").pack(side=tk.RIGHT, padx=10)
+
+        # Create results table
+        results_frame = ttk.Frame(batch_window)
+        results_frame.grid(row=1, column=0, sticky="nsew", padx=10, pady=5)
+
+        # Create treeview
+        tree = ttk.Treeview(results_frame)
+        tree.pack(fill=tk.BOTH, expand=True)
+
+        # Add columns
+        tree["columns"] = ("variation", "slippage", "impact", "fees", "net_cost")
+        tree.column("#0", width=50, minwidth=50, stretch=tk.NO)
+        tree.column("variation", width=200, minwidth=200)
+        tree.column("slippage", width=100, minwidth=100)
+        tree.column("impact", width=100, minwidth=100)
+        tree.column("fees", width=100, minwidth=100)
+        tree.column("net_cost", width=100, minwidth=100)
+
+        tree.heading("#0", text="ID")
+        tree.heading("variation", text="Variation")
+        tree.heading("slippage", text="Slippage (%)")
+        tree.heading("impact", text="Impact (%)")
+        tree.heading("fees", text="Fees (%)")
+        tree.heading("net_cost", text="Net Cost (%)")
+
+        # Add scrollbar
+        scrollbar = ttk.Scrollbar(results_frame, orient="vertical", command=tree.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        tree.configure(yscrollcommand=scrollbar.set)
+
+        # Add data
+        for i, item in enumerate(results.get("results", [])):
+            variation = item.get("variation", {})
+            result = item.get("result", {})
+
+            # Format variation string
+            variation_str = ", ".join(f"{k}={v}" for k, v in variation.items())
+
+            # Get metrics
+            slippage = result.get("expected_slippage_pct", 0)
+            impact = result.get("market_impact", {}).get("total_impact_pct", 0)
+            fees = result.get("fees", {}).get("effective_fee_rate", 0) * 100
+            net_cost = result.get("net_cost_pct", 0)
+
+            tree.insert("", "end", text=str(i+1), values=(
+                variation_str,
+                f"{slippage:.4f}",
+                f"{impact:.4f}",
+                f"{fees:.4f}",
+                f"{net_cost:.4f}"
+            ))
+
+        # Create footer with export button
+        footer_frame = ttk.Frame(batch_window)
+        footer_frame.grid(row=2, column=0, sticky="ew", padx=10, pady=5)
+        
+        # Add export button
+        def export_batch():
+            from utils.export import export_batch_results_to_csv
+            from tkinter import filedialog
+
+            filename = filedialog.asksaveasfilename(
+                defaultextension=".csv",
+                filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+                title="Export Batch Results"
+            )
+
+            if filename:
+                export_batch_results_to_csv(results, filename)
+                tk.messagebox.showinfo("Export", f"Results exported to {filename}")
+
+        tk.Button(footer_frame, text="Export to CSV", command=export_batch).pack(side=tk.LEFT, padx=10)
+
+        # Add close button
+        tk.Button(footer_frame, text="Close", command=batch_window.destroy).pack(side=tk.RIGHT, padx=10)
+    
             
     def update_connection_stats(self, stats: Dict[str, Any]) -> None:
         """
