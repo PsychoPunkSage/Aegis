@@ -26,7 +26,7 @@ class MainWindow:
         
         # Create main window
         self.root = tk.Tk()
-        self.root.title("Crypto Trade Simulator")
+        self.root.title("Aegis - Crypto Trade Simulator")
         self.root.geometry("1200x800")
         self.root.minsize(800, 600)
         
