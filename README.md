@@ -1,6 +1,6 @@
 # Aegis - Crypto Trade Simulator
 
-![Aegis](./images/maindash.png)
+[![Watch the video](https://img.youtube.com/vi/nSK02p2Wpbw/maxresdefault.jpg)](https://www.youtube.com/watch?v=nSK02p2Wpbw)
 
 ## Table of Contents
 - [Aegis - Crypto Trade Simulator](#aegis---crypto-trade-simulator)
