@@ -1,5 +1,7 @@
 # Aegis - Crypto Trade Simulator
 
+![Aegis](./images/maindash.png)
+
 ## Table of Contents
 - [Aegis - Crypto Trade Simulator](#aegis---crypto-trade-simulator)
   - [Table of Contents](#table-of-contents)
@@ -8,30 +10,10 @@
   - [Data Flow](#data-flow)
   - [Component Documentation](#component-documentation)
     - [Data Structures](#data-structures)
-      - [OrderBook](#orderbook)
-      - [OptimizedOrderBook](#optimizedorderbook)
-      - [MarketMetrics](#marketmetrics)
     - [Services](#services)
-      - [WebSocketClient](#websocketclient)
-      - [DataProcessor](#dataprocessor)
-      - [TradeSimulator](#tradesimulator)
     - [Models](#models)
-      - [SlippageModel](#slippagemodel)
-      - [MarketImpactModel](#marketimpactmodel)
-      - [FeeCalculator](#feecalculator)
-      - [MakerTakerEstimator](#makertakerestimator)
-      - [VolatilityCalculator](#volatilitycalculator)
-      - [OrderExecution](#orderexecution)
     - [User Interface](#user-interface)
-      - [MainWindow](#mainwindow)
-      - [InputPanel](#inputpanel)
-      - [OutputPanel](#outputpanel)
-      - [PerformanceDashboard](#performancedashboard)
     - [Utilities](#utilities)
-      - [Caching](#caching)
-      - [Export](#export)
-      - [Logging](#logging)
-      - [Performance](#performance)
   - [User Guide](#user-guide)
     - [Installation](#installation)
     - [Running the Application](#running-the-application)
@@ -258,173 +240,233 @@ flowchart TD
 
 ### Data Structures
 
-#### OrderBook
+<details>
+<summary><strong>OrderBook</strong></summary>
+
 The `OrderBook` class represents a snapshot of the order book at a specific point in time. It contains lists of asks and bids, each represented as an `OrderBookLevel` with a price and quantity.
 
 **Key Methods:**
-- `from_json()`: Creates an OrderBook from a JSON string
-- `best_ask()`: Returns the best (lowest) ask price
-- `best_bid()`: Returns the best (highest) bid price
-- `mid_price()`: Returns the mid price between best bid and ask
-- `spread()`: Returns the bid-ask spread
-- `depth_at_price()`: Returns the total quantity available at a given price level
+- `from_json()`: Creates an OrderBook from a JSON string  
+- `best_ask()`: Returns the best (lowest) ask price  
+- `best_bid()`: Returns the best (highest) bid price  
+- `mid_price()`: Returns the mid price between best bid and ask  
+- `spread()`: Returns the bid-ask spread  
+- `depth_at_price()`: Returns the total quantity available at a given price level  
+</details>
 
-#### OptimizedOrderBook
+<details>
+<summary><strong>OptimizedOrderBook</strong></summary>
+
 An optimized version of the OrderBook that uses NumPy arrays for better performance.
 
 **Key Features:**
-- Memory-efficient storage of price levels
-- Optimized calculations for depth and other metrics
-- Compatible with the standard OrderBook interface
+- Memory-efficient storage of price levels  
+- Optimized calculations for depth and other metrics  
+- Compatible with the standard OrderBook interface  
+</details>
 
-#### MarketMetrics
+<details>
+<summary><strong>MarketMetrics</strong></summary>
+
 Contains calculated metrics derived from the order book data.
 
 **Fields:**
-- `timestamp`: Time of the metrics calculation
-- `symbol`: Trading symbol
-- `mid_price`: Mid price between best bid and ask
-- `spread`: Bid-ask spread
-- `bid_depth`: Total quantity on the bid side
-- `ask_depth`: Total quantity on the ask side
-- `volatility`: Short-term price volatility estimate
+- `timestamp`: Time of the metrics calculation  
+- `symbol`: Trading symbol  
+- `mid_price`: Mid price between best bid and ask  
+- `spread`: Bid-ask spread  
+- `bid_depth`: Total quantity on the bid side  
+- `ask_depth`: Total quantity on the ask side  
+- `volatility`: Short-term price volatility estimate  
+</details>
 
 ### Services
 
-#### WebSocketClient
+<details>
+<summary><strong>WebSocketClient</strong></summary>
+
 Manages connections to exchange WebSocket endpoints and processes incoming data.
 
 **Key Methods:**
-- `connect()`: Establishes connection to the WebSocket server
-- `disconnect()`: Closes the WebSocket connection
-- `reconnect()`: Attempts to reconnect after a connection failure
-- `receive_messages()`: Processes messages from the WebSocket
-- `connect_and_receive()`: Main method to start the client
+- `connect()`: Establishes connection to the WebSocket server  
+- `disconnect()`: Closes the WebSocket connection  
+- `reconnect()`: Attempts to reconnect after a connection failure  
+- `receive_messages()`: Processes messages from the WebSocket  
+- `connect_and_receive()`: Main method to start the client  
+</details>
 
-#### DataProcessor
+<details>
+<summary><strong>DataProcessor</strong></summary>
+
 Processes raw orderbook data into usable metrics for simulation.
 
 **Key Methods:**
-- `process_orderbook()`: Transforms an orderbook into market metrics
-- `get_current_metrics()`: Returns the most recent market metrics
-- `get_current_orderbook()`: Returns the most recent orderbook
+- `process_orderbook()`: Transforms an orderbook into market metrics  
+- `get_current_metrics()`: Returns the most recent market metrics  
+- `get_current_orderbook()`: Returns the most recent orderbook  
+</details>
 
-#### TradeSimulator
+<details>
+<summary><strong>TradeSimulator</strong></summary>
+
 Core simulation engine that combines models to calculate trade costs.
 
 **Key Methods:**
-- `update_market_data()`: Updates the simulator with the latest market data
-- `simulate_trade()`: Executes a trade simulation with given parameters
-- `start_batch_simulation()`: Runs multiple simulations with parameter variations
-- `get_performance_metrics()`: Returns metrics about simulator performance
+- `update_market_data()`: Updates the simulator with the latest market data  
+- `simulate_trade()`: Executes a trade simulation with given parameters  
+- `start_batch_simulation()`: Runs multiple simulations with parameter variations  
+- `get_performance_metrics()`: Returns metrics about simulator performance  
+</details>
 
 ### Models
 
-#### SlippageModel
+<details>
+<summary><strong>SlippageModel</strong></summary>
+
 Predicts slippage for market orders based on orderbook data.
 
 **Key Methods:**
-- `update()`: Updates the model with new orderbook data
-- `predict_slippage_linear()`: Predicts slippage using linear regression
-- `predict_slippage_quantile()`: Predicts slippage at a specific quantile level
+- `update()`: Updates the model with new orderbook data  
+- `predict_slippage_linear()`: Predicts slippage using linear regression  
+- `predict_slippage_quantile()`: Predicts slippage at a specific quantile level  
+</details>
 
-#### MarketImpactModel
+<details>
+<summary><strong>MarketImpactModel</strong></summary>
+
 Calculates market impact of trades using various models including Almgren-Chriss.
 
 **Key Methods:**
-- `calculate_impact()`: Calculates impact based on trade parameters
-- `get_model_info()`: Returns information about the current model
+- `calculate_impact()`: Calculates impact based on trade parameters  
+- `get_model_info()`: Returns information about the current model  
+</details>
 
-#### FeeCalculator
+<details>
+<summary><strong>FeeCalculator</strong></summary>
+
 Calculates exchange fees based on fee tiers and maker/taker proportions.
 
 **Key Methods:**
-- `calculate_fees()`: Calculates fees for a given order value and fee tier
-- `get_tier_details()`: Returns details for a specific fee tier
+- `calculate_fees()`: Calculates fees for a given order value and fee tier  
+- `get_tier_details()`: Returns details for a specific fee tier  
+</details>
 
-#### MakerTakerEstimator
+<details>
+<summary><strong>MakerTakerEstimator</strong></summary>
+
 Estimates the proportion of an order likely to be executed as maker vs taker.
 
 **Key Methods:**
-- `estimate_proportion()`: Estimates maker/taker proportion based on market conditions
+- `estimate_proportion()`: Estimates maker/taker proportion based on market conditions  
+</details>
 
-#### VolatilityCalculator
+<details>
+<summary><strong>VolatilityCalculator</strong></summary>
+
 Calculates volatility using multiple methods including EWMA.
 
 **Key Methods:**
-- `add_price()`: Adds a new price observation
-- `get_volatility()`: Returns volatility estimates using different methods
+- `add_price()`: Adds a new price observation  
+- `get_volatility()`: Returns volatility estimates using different methods  
+</details>
 
-#### OrderExecution
+<details>
+<summary><strong>OrderExecution</strong></summary>
+
 Simulates order execution for different order types.
 
 **Key Methods:**
-- `estimate_execution()`: Estimates execution characteristics for different order types
+- `estimate_execution()`: Estimates execution characteristics for different order types  
+</details>
 
 ### User Interface
 
-#### MainWindow
+<details>
+<summary><strong>MainWindow</strong></summary>
+
 Main application window that coordinates all UI components.
 
 **Key Methods:**
-- `run()`: Starts the main UI event loop
-- `update_market_data()`: Updates the market data display
-- `update_simulation_results()`: Updates the simulation results display
-- `show_performance_dashboard()`: Opens the performance monitoring dashboard
+- `run()`: Starts the main UI event loop  
+- `update_market_data()`: Updates the market data display  
+- `update_simulation_results()`: Updates the simulation results display  
+- `show_performance_dashboard()`: Opens the performance monitoring dashboard  
+</details>
 
-#### InputPanel
+<details>
+<summary><strong>InputPanel</strong></summary>
+
 Panel for inputting simulation parameters.
 
 **Key Fields:**
-- `exchange_var`, `symbol_var`, `order_type_var`, etc.: Variables for user inputs
-- `on_simulate`: Callback function for the simulate button
+- `exchange_var`, `symbol_var`, `order_type_var`, etc.: Variables for user inputs  
+- `on_simulate`: Callback function for the simulate button  
+</details>
 
-#### OutputPanel
+<details>
+<summary><strong>OutputPanel</strong></summary>
+
 Panel for displaying simulation results.
 
 **Key Methods:**
-- `update_market_data()`: Updates the market data display
-- `update_simulation_results()`: Updates the simulation results display
-- `_create_cost_breakdown_chart()`: Creates a visual breakdown of costs
+- `update_market_data()`: Updates the market data display  
+- `update_simulation_results()`: Updates the simulation results display  
+- `_create_cost_breakdown_chart()`: Creates a visual breakdown of costs  
+</details>
 
-#### PerformanceDashboard
+<details>
+<summary><strong>PerformanceDashboard</strong></summary>
+
 Dashboard for monitoring system performance.
 
 **Key Methods:**
-- `refresh()`: Updates all dashboard tabs
-- `update_performance_data()`: Updates performance metrics
-- `update_connection_data()`: Updates connection statistics
-- `update_error_data()`: Updates error log
+- `refresh()`: Updates all dashboard tabs  
+- `update_performance_data()`: Updates performance metrics  
+- `update_connection_data()`: Updates connection statistics  
+- `update_error_data()`: Updates error log  
+</details>
 
 ### Utilities
 
-#### Caching
+<details>
+<summary><strong>Caching</strong></summary>
+
 Caching utilities to improve performance of expensive calculations.
 
 **Key Components:**
-- `LRUCache`: Least Recently Used cache for function results
-- `@memoize`: Decorator for memoizing function results
+- `LRUCache`: Least Recently Used cache for function results  
+- `@memoize`: Decorator for memoizing function results  
+</details>
 
-#### Export
+<details>
+<summary><strong>Export</strong></summary>
+
 Data export utilities for saving simulation results.
 
 **Key Functions:**
-- `export_results_to_csv()`: Exports simulation results to CSV format
-- `export_batch_results_to_csv()`: Exports batch simulation results to CSV
-- `export_results_to_json()`: Exports simulation results to JSON format
+- `export_results_to_csv()`: Exports simulation results to CSV format  
+- `export_batch_results_to_csv()`: Exports batch simulation results to CSV  
+- `export_results_to_json()`: Exports simulation results to JSON format  
+</details>
 
-#### Logging
+<details>
+<summary><strong>Logging</strong></summary>
+
 Logging configuration and setup.
 
 **Key Function:**
-- `setup_logging()`: Configures logging for the application
+- `setup_logging()`: Configures logging for the application  
+</details>
 
-#### Performance
+<details>
+<summary><strong>Performance</strong></summary>
+
 Performance monitoring and measurement utilities.
 
 **Key Components:**
-- `LatencyTracker`: Tracks operation latency for performance monitoring
-- `@measure_latency`: Decorator for measuring function execution time
+- `LatencyTracker`: Tracks operation latency for performance monitoring  
+- `@measure_latency`: Decorator for measuring function execution time  
+</details>
 
 ## User Guide
 
@@ -463,34 +505,74 @@ This will:
 
 ### Using the Simulator
 
-1. **Configure Input Parameters**
-   - Select exchange (currently only OKX is supported)
-   - Choose trading symbol (e.g., BTC-USDT-SWAP)
-   - Select order type (market, limit, etc.)
-   - Choose trade side (buy or sell)
-   - Enter quantity in base currency or quote currency
-   - Set market parameters like volatility and fee tier
+<h4>1. Configure Input Parameters</h3>
 
-2. **Run Simulation**
-   - Click the "Simulate Trade" button
-   - Wait for the simulation to complete
+<div style="display: flex; flex-wrap: wrap; align-items: flex-start; gap: 20px; margin-bottom: 20px;">
+  <div style="flex: 1 1 300px; min-width: 280px;">
+    <ul>
+      <li><strong>Select exchange</strong> (currently only OKX is supported)</li>
+      <li><strong>Choose trading symbol</strong> (e.g., BTC-USDT-SWAP)</li>
+      <li><strong>Select order type</strong> (market, limit, etc.)</li>
+      <li><strong>Choose trade side</strong> (buy or sell)</li>
+      <li><strong>Enter quantity</strong> in base currency or quote currency</li>
+      <li><strong>Set market parameters</strong> like volatility and fee tier</li>
+    </ul>
+  </div>
 
-3. **View Results**
+  <div style="flex: 1 1 300px; min-width: 280px;">
+    <img src="./images/input_params.png" alt="Input Parameters" style="max-width: 100%; border: 1px solid #ccc; border-radius: 8px;">
+  </div>
+</div>
+
+<!-- Step 2: Run Simulation -->
+<h4>2. Run Simulation</h4>
+
+<div style="display: flex; flex-wrap: wrap; align-items: flex-start; gap: 20px; margin-bottom: 20px;">
+  <div style="flex: 1 1 300px; min-width: 280px;">
+    <ul>
+      <li>Click the <strong>Simulate Trade</strong> button</li>
+      <li>Wait for the simulation to complete</li>
+    </ul>
+  </div>
+
+  <div style="flex: 1 1 300px; min-width: 280px;">
+    <img src="./images/simulate_button.png" alt="Simulate Button" style="max-width: 100%; border: 1px solid #ccc; border-radius: 8px;">
+  </div>
+</div>
+
+<h4>3. View Results</h4>
+
    - The Summary tab shows the basic cost breakdown
    - The Details tab provides comprehensive metrics
    - The Visualization tab displays a chart of costs
 
+| ![Summary Data](./images/summary_data.png) | ![Summary Graph](./images/summary_graph.png) |
+| :----------------------------------------: | :------------------------------------------: |
+|              **Summary Data**              |              **Summary Graph**               |
+
+
 ### Performance Dashboard
 
-To open the performance dashboard:
-1. Click "Tools" in the menu bar
-2. Select "Performance Dashboard"
+<div style="display: flex; flex-wrap: wrap; align-items: flex-start; gap: 20px; margin-bottom: 20px;">
+  <div style="flex: 1 1 300px; min-width: 280px;">
+    <p><strong>To open the performance dashboard:</strong></p>
+    <ol>
+      <li>Click "Tools" in the menu bar</li>
+      <li>Select "Performance Dashboard"</li>
+    </ol>
+    <p><strong>The dashboard has four tabs:</strong></p>
+    <ol>
+      <li><strong>Overview</strong>: Shows system status and key performance metrics</li>
+      <li><strong>Latency</strong>: Displays detailed latency statistics for different operations</li>
+      <li><strong>Connections</strong>: Shows status and statistics for WebSocket connections</li>
+      <li><strong>Errors</strong>: Displays error log for troubleshooting</li>
+    </ol>
+  </div>
 
-The dashboard has four tabs:
-1. **Overview**: Shows system status and key performance metrics
-2. **Latency**: Displays detailed latency statistics for different operations
-3. **Connections**: Shows status and statistics for WebSocket connections
-4. **Errors**: Displays error log for troubleshooting
+  <div style="flex: 1 1 300px; min-width: 280px;">
+    <img src="./images/performance_dash.png" alt="Performance Dashboard" style="max-width: 100%; border: 1px solid #ccc; border-radius: 8px;">
+  </div>
+</div>
 
 ### Batch Simulations
 
@@ -507,7 +589,7 @@ The results will be displayed in a separate window with:
 
 ### Exporting Results
 
-Results can be exported in several ways:
+<!-- Results can be exported in several ways:
 1. **From Simulation Results**
    - Click "File" → "Export Results"
    - Choose CSV or JSON format
@@ -520,6 +602,41 @@ Results can be exported in several ways:
 3. **From Performance Dashboard**
    - Click "Export" in the dashboard
    - Select destination file
+
+![export main dash](./images/export1.png)
+![export perf dash](./images/export2.png) -->
+
+<div style="display: flex; flex-wrap: wrap; align-items: flex-start; gap: 20px; margin-bottom: 20px;">
+  <div style="flex: 1 1 300px; min-width: 280px;">
+    <p><strong>Results can be exported in several ways:</strong></p>
+    <ol>
+      <li><strong>From Simulation Results</strong>
+        <ul>
+          <li>Click "File" → "Export Results"</li>
+          <li>Choose CSV or JSON format</li>
+          <li>Select destination file</li>
+        </ul>
+      </li>
+      <li><strong>From Batch Simulation</strong>
+        <ul>
+          <li>Click "Export to CSV" in the batch results window</li>
+          <li>Select destination file</li>
+        </ul>
+      </li>
+      <li><strong>From Performance Dashboard</strong>
+        <ul>
+          <li>Click "Export" in the dashboard</li>
+          <li>Select destination file</li>
+        </ul>
+      </li>
+    </ol>
+  </div>
+
+  <div style="flex: 1 1 300px; min-width: 280px;">
+    <img src="./images/export1.png" alt="Export from Main Dashboard" style="max-width: 100%; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 10px;">
+    <img src="./images/export2.png" alt="Export from Performance Dashboard" style="max-width: 100%; border: 1px solid #ccc; border-radius: 8px;">
+  </div>
+</div>
 
 ## Current Status & Roadmap
 
