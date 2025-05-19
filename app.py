@@ -40,7 +40,7 @@ class AppState:
         self.start_time = time.time()
         self.active_symbols = []
         
-def update_ui(app_state, ui, simulator, update_interval=0.5):
+def update_ui(app_state, ui, simulator, clients, update_interval=0.5):
     """
     Update UI with latest data
     
@@ -50,6 +50,7 @@ def update_ui(app_state, ui, simulator, update_interval=0.5):
         app_state: Application state object
         ui: MainWindow instance
         simulator: TradeSimulator instance
+        clients: List of WebSocket clients
         update_interval: Update interval in seconds
     """
     logger = logging.getLogger(__name__)
@@ -88,22 +89,40 @@ def update_ui(app_state, ui, simulator, update_interval=0.5):
                     ui.root.after(0, ui.update_market_data, orderbook_summary)
                     
                     # Log performance metrics occasionally
-                    if app_state.ui_update_count % 50 == 0:
+                    if app_state.ui_update_count % 10 == 0:
                         # Get simulator performance metrics
                         perf_metrics = simulator.get_performance_metrics()
                         
                         # Add system stats
                         perf_metrics["uptime"] = time.time() - app_state.start_time
+
+                        # Add these critical missing fields
+                        perf_metrics["active_symbols"] = app_state.active_symbols if hasattr(app_state, 'active_symbols') else []
+                        perf_metrics["error_count"] = len(app_state.error_log) if hasattr(app_state, 'error_log') else 0
+
+                        # Get simulator threads - add the attribute to simulator if it doesn't exist
+                        if hasattr(simulator, 'max_workers'):
+                            perf_metrics["simulator_threads"] = simulator.max_workers
+                        else:
+                            perf_metrics["simulator_threads"] = 1  # Default value
+
+                        # Update connection stats for dashboard
+                        connection_stats = {}
+                        for client in clients:
+                            connection_stats[client.connection_id] = client.get_stats() 
                         
                         # Update app state with performance metrics
                         app_state.performance_stats = perf_metrics
                         
                         # Update UI with performance metrics
                         ui.root.after(0, ui.update_performance_metrics, perf_metrics)
+                        ui.root.after(0, ui.update_connection_stats, connection_stats)
+                        ui.root.after(0, ui.update_error_log, app_state.error_log)
                         
                         # Log metrics
-                        logger.info(f"Performance metrics: avg_latency={perf_metrics.get('avg_processing_time', 0):.2f}ms")
-                        
+                        logger.info(f"Performance metrics: active_symbols={len(perf_metrics.get('active_symbols', []))}, "
+                                    f"errors={perf_metrics.get('error_count', 0)}, "
+                                    f"threads={perf_metrics.get('simulator_threads', 1)}")
             # Wait a bit to avoid using too much CPU
             time.sleep(update_interval)
         except Exception as e:
@@ -135,6 +154,10 @@ def on_orderbook_update(orderbook, app_state, data_processor, simulator):
         # Update application state
         app_state.latest_orderbook = orderbook
         app_state.latest_metrics = metrics
+
+        # Add symbol to active symbols if not already there
+        if not hasattr(app_state, 'active_symbols'):
+            app_state.active_symbols = []
         
         # Make sure the symbol is in active symbols
         if orderbook.symbol not in app_state.active_symbols:
@@ -390,7 +413,7 @@ def main():
     # Start UI update thread
     ui_thread = threading.Thread(
         target=update_ui,
-        args=(app_state, ui, simulator),
+        args=(app_state, ui, simulator, clients),
         daemon=True
     )
     ui_thread.start()
