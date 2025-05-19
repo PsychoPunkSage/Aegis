@@ -498,6 +498,22 @@ To start the application:
 python app.py
 ```
 
+For Dockerized version:
+
+```bash
+# Need to give docker, the permission to use host display
+xhost +local:docker
+
+# Build Docker image
+sudo docker build -t aegis .
+
+# Run the image
+sudo docker run -it --rm -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix aegis
+
+# Revoke the permission
+xhost -local:docker
+```
+
 This will:
 1. Connect to the configured WebSocket endpoints
 2. Open the main UI window
